@@ -1,0 +1,19 @@
+{
+  "name": "gk-jqm1.4",
+  "version": "0.0.1",
+  "authors": [
+    "EZoUI <ezoservice@icsc.com.tw>"
+  ],
+  "main": "all.html",
+  "keywords": [
+    "gk",
+    "web-components",
+    "jquery-mobile"
+  ],
+  "license": "MIT",
+  "homepage": "http://www.ezoui.com/",
+  "private": true,
+  "devDependencies": {
+    "gk-loader": "../gk-loader"
+  }
+}

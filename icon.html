@@ -1,0 +1,37 @@
+<element name='icon'>
+
+  <template>
+    <div id='{{id}}' style='{{style}}'>
+      <content></content>
+    </div>
+  </template>
+
+  <script>
+  registerElement('icon', {
+
+    refresh: function(cfg) {
+      var iconId = this.id,
+        aAttribRegexp = /^(height|width|href)$/,
+        $a = $("#" + iconId + "-a");
+      for (var attribName in cfg) {
+        var val = cfg[attribName];
+        if (aAttribRegexp.test(attribName)) {
+          $a.attr(attribName, val);
+          continue;
+        }
+        var $ele = $("#" + iconId + "-" + attribName);
+        if (attribName === "img") {
+          $ele.attr("src", val);
+        } else {
+          $ele.html(val);
+        }
+        if (attribName === 'count') {
+          this.adjustCount($ele);
+        }
+      }
+    }
+
+  });
+  </script>
+
+</element>

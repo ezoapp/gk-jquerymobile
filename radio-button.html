@@ -1,0 +1,21 @@
+<element name='radio-button'>
+
+  <template>
+    <input id='{{id}}' type='radio' name='{{name}}' value='{{value}}' data-iconpos='{{data-iconpos}}' data-theme='{{data-theme}}' data-mini='{{data-mini}}'>
+  </template>
+
+  <script>
+  registerElement('radio-button', {
+
+    value: function(val) {
+      if (val !== undefined) {
+        return this.$ele.val(val);
+      } else {
+        return this.$ele.val();
+      }
+    }
+
+  });
+  </script>
+
+</element>

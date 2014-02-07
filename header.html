@@ -1,0 +1,38 @@
+<element name='header'>
+
+  <template>
+    <div id='{{id}}' style='{{style}}' data-position='{{data-position}}' data-fullscreen='{{data-fullscreen}}' persist='{{persist}}' data-gk-click='{{onclick}}' data-theme='{{data-theme}}' data-role='header'>
+      <content></content>
+    </div>
+  </template>
+
+  <script>
+  registerElement('header', {
+
+    init: function() {
+      var label = this.$ele.find('h1');
+      var labelHtml = label.html();
+      if (labelHtml === '{{label}}' || labelHtml === '') {
+        label.remove();
+      }
+    },
+
+    label: function(lab) {
+      var $ele = this.$ele,
+        $header = $ele.find(':header:first');
+      if (lab) {
+        if ($header.length > 0) {
+          $header.html(lab);
+        } else {
+          $ele.html(lab);
+        }
+        return $ele;
+      } else {
+        return $header.length > 0 ? $header.html() : $ele.html();
+      }
+    }
+
+  });
+  </script>
+
+</element>

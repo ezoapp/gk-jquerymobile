@@ -1,0 +1,29 @@
+<element name='text-input'>
+
+  <template>
+    <input type='{{type}}' class='{{class}}' id='{{id}}' name='{{name}}' value='{{value}}' style='{{style}}' disabled='{{disabled}}' placeholder='{{placeholder}}' data-clear-btn='{{data-clear-btn}}' data-clear-btn-text='{{data-clear-btn-text}}' data-prevent-focus-zoom='{{data-prevent-focus-zoom}}' data-mini='{{data-mini}}' data-theme='{{data-theme}}'>
+  </template>
+
+  <script>
+  registerElement('text-input', {
+
+    init: function() {
+      var self = this,
+        style = this.$originEle.attr('style');
+      self.$ele.one("textinputcreate", function(event, ui) {
+        !style || self.$ele.parent().attr('style', style);
+      });
+    },
+
+    value: function(val) {
+      if (val !== undefined) {
+        return this.$ele.val(val);
+      } else {
+        return this.$ele.val();
+      }
+    }
+
+  });
+  </script>
+
+</element>

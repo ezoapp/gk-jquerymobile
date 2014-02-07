@@ -1,0 +1,79 @@
+<element name='selectmenu'>
+
+  <template>
+    <select id='{{id}}' name='{{name}}' disable='{{disable}}' data-corners='{{data-corners}}' data-icon='{{data-icon}}' data-iconpos='{{data-iconpos}}' data-inline='{{data-inline}}' data-mini='{{data-mini}}' data-native-menu='{{data-native-menu}}' data-overlay-theme='{{data-overlay-theme}}' data-placeholder='{{data-placeholder}}' data-theme='{{data-theme}}' data-shadow='{{data-shadow}}' data-iconshadow='{{data-iconshadow}}' data-prevent-focus-zoom='{{data-prevent-focus-zoom}}'>
+      <content></content>
+    </select>
+  </template>
+
+  <script>
+  registerElement('selectmenu', {
+
+    init: function() {
+      var self = this,
+        $ele = this.$ele;
+      this.modelTemplate = this.$originEle.html();
+      this.onChangeCallback = function() {};
+      $ele.html(this.$originEle.html());
+      $ele.on("selectmenucreate", function(event, ui) {
+        if ($ele.attr('disable') == 'true') {
+          $ele.selectmenu("disable");
+        }
+      });
+      $ele.on("change", function() {
+        if (typeof self.onChangeCallback !== null) {
+          self.onChangeCallback($(this));
+        }
+      });
+    },
+
+    value: function(val) {
+      if (val !== undefined) {
+        return this.$ele.val(val).selectmenu('refresh');
+      } else {
+        return this.$ele.val();
+      }
+    },
+
+    enable: function() {
+      this.$ele.selectmenu("enable");
+    },
+
+    disable: function() {
+      this.$ele.selectmenu("disable");
+    },
+
+    open: function() {
+      this.$ele.selectmenu("open");
+    },
+
+    close: function() {
+      this.$ele.selectmenu("close");
+    },
+
+    refresh: function(option) {
+      this.$ele.selectmenu("refresh", option);
+    },
+
+    model: function(model) {
+      var self = this;
+      self.$ele.children().remove();
+      $(model).each(function(idx, obj) {
+        var temp = self.modelTemplate;
+        for (var key in obj) {
+          var regex = new RegExp('\\$\\{' + key + '\\}', "g");
+          temp = temp.replace(regex, obj[key]);
+        }
+        self.$ele.append(temp);
+      });
+      self.refresh();
+    },
+
+    onChange: function(callback) {
+      this.onChangeCallback = callback;
+    }
+
+  });
+  </script>
+
+</element>

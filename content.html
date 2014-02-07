@@ -1,0 +1,23 @@
+<element name='content'>
+
+  <template>
+    <div id='{{id}}' class='{{class}}' style='{{style}}'>
+      <content></content>
+    </div>
+  </template>
+
+  <script>
+  registerElement('content', {
+
+    init: function() {
+      var $ele = this.$ele;
+      if (!$ele.hasClass("ui-content")) {
+        var cls = "ui-content " + $ele.attr("class");
+        $ele.attr("class", cls);
+      }
+    }
+
+  });
+  </script>
+
+</element>

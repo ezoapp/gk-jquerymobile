@@ -1,0 +1,22 @@
+<element name='navbar'>
+
+  <template>
+    <div data-role='navbar' id='{{id}}' style='{{style}}' data-theme='{{data-theme}}' data-iconpos='{{data-iconpos}}' data-transition='{{data-transition}}'>
+      <content></content>
+    </div>
+  </template>
+
+  <script>
+  registerElement('navbar', {
+
+    init: function() {
+      var $ul = this.$ele.find("ul");
+      if ($ul && $ul.children().length == 0) {
+        this.$ele.removeAttr('data-role');
+      }
+    }
+
+  });
+  </script>
+
+</element>

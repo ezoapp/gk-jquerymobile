@@ -1,0 +1,32 @@
+<element name='textarea-input'>
+
+  <template>
+    <textarea id='{{id}}' name='{{name}}' style='{{style}}' disabled='{{disabled}}' placeholder='{{placeholder}}' data-prevent-focus-zoom='{{data-prevent-focus-zoom}}' data-theme='{{data-theme}}' data-autogrow='{{data-autogrow}}'></textarea>
+  </template>
+
+  <script>
+  registerElement('textarea-input', {
+
+    init: function() {
+      var self = this,
+        style = this.$originEle.attr('style');
+      self.$ele.one("textinputcreate", function(event, ui) {
+        !style || self.$ele.parent().attr('style', style);
+      });
+
+      var value = this.$originEle.html();
+      self.$ele.html(value);
+    },
+
+    value: function(val) {
+      if (val !== undefined) {
+        return this.$ele.val(val);
+      } else {
+        return this.$ele.val();
+      }
+    }
+
+  });
+  </script>
+
+</element>

@@ -1,0 +1,33 @@
+<element name='search-input'>
+
+  <template>
+    <input type='{{type}}' class='{{class}}' id='{{id}}' name='{{name}}' value='{{value}}' style='{{style}}' disabled='{{disabled}}' placeholder='{{placeholder}}' data-clear-btn='{{data-clear-btn}}' data-clear-btn-text='{{data-clear-btn-text}}' data-prevent-focus-zoom='{{data-prevent-focus-zoom}}' data-mini='{{data-mini}}' data-theme='{{data-theme}}'>
+  </template>
+
+  <script>
+  registerElement('search-input', {
+
+    init: function() {
+      var self = this,
+        style = self.$originEle.attr('style');
+      $(document).one('textinputcreate', '#' + this.id, function() {
+        var $this = $(this);
+        // jquery mobile degrade input
+        self.$ele = $this;
+        $this.data("_gk_", self);
+        !style || self.$ele.parent().attr('style', style);
+      });
+    },
+
+    value: function(val) {
+      if (val !== undefined) {
+        return this.$ele.val(val);
+      } else {
+        return this.$ele.val();
+      }
+    }
+
+  });
+  </script>
+
+</element>

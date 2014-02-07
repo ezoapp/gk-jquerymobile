@@ -1,0 +1,103 @@
+<element name='gktable-jqm'>
+
+  <template>
+    <table data-role='table' id='{{id}}' data-mode='{{data-mode}}' data-column-btn-text='{{data-column-btn-text}}' loadURL='{{url}}' class='{{class}}'></table>
+  </template>
+
+  <script>
+  registerElement('gktable-jqm', {
+
+    init: function() {
+      this.$ele.html(this.$originEle.html());
+    },
+
+    load: function(url) {
+      var $ele = this.$ele;
+      $ele.hide();
+      $.mobile.loading('show', {
+        text: 'loading',
+        textVisible: true,
+        theme: 'z'
+      });
+      $.getJSON(url, function(data) {
+        $.mobile.loading('hide');
+        $ele.gk("info", data);
+        $ele.show();
+      });
+    },
+
+    info: function(info) {
+      var dd = {
+        columns: [{
+          name: "c1",
+          label: "會計項目",
+          priority: 1
+        }, {
+          name: "c2",
+          label: "102/01~102/06",
+          priority: 1
+        }, {
+          name: "c3",
+          label: "101/01~101/06",
+          priority: 2
+        }],
+        data: [{
+          c1: "營業項目",
+          c2: "596,655,128",
+          c3: "547,949,775"
+        }, {
+          c1: "營業成本",
+          c2: "589,636,440",
+          c3: "585,125,459"
+        }, {
+          c1: "營業毛利(損)",
+          c2: "7,018,688",
+          c3: "-37,175,684"
+        }, {
+          c1: "營業費用",
+          c2: "9,092,081",
+          c3: "9,173,331"
+        }]
+      };
+
+      info && (dd = info);
+
+      var columns = dd.columns;
+      var data = dd.data;
+      var thead = "",
+        tbody = "";
+      var i, aa, priority;
+
+      $.each(columns, function(idx, val) {
+        if (val.priority !== undefined) {
+          priority = val.priority;
+        } else {
+          idx < 2 ? (priority = 1) : (priority = 2);
+        }
+        aa = "<th data-priority='" + priority + "'>" + (val.label || val.name) + "</th>";
+        thead += aa;
+      });
+      thead = "<thead><tr>" + thead + "</tr></thead>";
+
+      $.each(data, function(idxD, valD) {
+        aa = "";
+        $.each(columns, function(idx, val) {
+          if (idx === 0) {
+            aa += "<th>" + valD[val.name] + "</th>";
+          } else {
+            aa += "<td>" + valD[val.name] + "</td>";
+          }
+        });
+
+        tbody += "<tr>" + aa + "</tr>";
+      });
+      tbody = "<tbody>" + tbody + "</tbody>";
+
+      this.$ele.html(thead + tbody);
+      this.$ele.table("rebuild");
+    }
+
+  });
+  </script>
+
+</element>

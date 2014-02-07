@@ -1,0 +1,21 @@
+<element name='footer'>
+
+  <template>
+    <div id='{{id}}' style='{{style}}' persist='{{persist}}' data-fullscreen='{{data-fullscreen}}' data-position='{{data-position}}' data-theme='{{data-theme}}' data-role='footer'>
+      <content></content>
+    </div>
+  </template>
+
+  <script>
+  registerElement('footer', {
+
+    init: function() {
+      if (typeof this.$ele.attr('persist') === 'undefined') {
+        this.$ele.attr('data-id', 'persist');
+      }
+    }
+
+  });
+  </script>
+
+</element>

@@ -1,0 +1,82 @@
+<element name='controlgroup-checkbox'>
+
+  <template>
+    <fieldset id='{{id}}' class='{{class}}' style='{{style}}' data-role='controlgroup' data-type='{{data-type}}' data-mini='{{data-mini}}' data-iconpos='{{data-iconpos}}' data-corners='{{data-corners}}' data-exclude-invisible='{{data-exclude-invisible}}' data-shadow='{{data-shadow}}' data-theme={{data-theme}}>
+      <content></content>
+    </fieldset>
+  </template>
+
+  <script>
+  registerElement('controlgroup-checkbox', {
+
+    init: function() {
+      this.applyTemplate = this.$originEle.html();
+      this.onSelectCallback = function() {};
+    },
+
+    apply: function(info) {
+      var self = this,
+        $controlgroup = self.$ele.find('.ui-controlgroup-controls'),
+        html = self.applyTemplate;
+      for (var property in info) {
+        if (info.hasOwnProperty(property)) {
+          var regex = new RegExp('\\${' + property + '}', "gi");
+          html = html.replace(regex, info[property]);
+        }
+      }
+      var $html = $('<div>' + html + '</div>');
+      $html.find('[data-readonly=Y]').each(function(idx, input) {
+        $(input).attr('disabled', 'disabled');
+      });
+      $controlgroup.html($html.html());
+      self.$ele.enhanceWithin();
+
+      self.$ele.find('input[type="checkbox"]').click(function(e) {
+        if (typeof self.onSelectCallback !== null) {
+          self.onSelectCallback($(this));
+        }
+      });
+    },
+
+    onSelect: function(callback) {
+      this.onSelectCallback = callback;
+    },
+
+    disable: function(rowNum) {
+      var $checkbox = this.$ele.find('input[type="checkbox"]');
+      if (rowNum !== undefined) {
+        $($checkbox[rowNum]).checkboxradio("disable");
+      } else {
+        $checkbox.checkboxradio("disable");
+      }
+    },
+
+    enable: function(rowNum) {
+      var $checkbox = this.$ele.find('input[type="checkbox"]');
+      if (rowNum !== undefined) {
+        $($checkbox[rowNum]).checkboxradio("enable");
+      } else {
+        $checkbox.checkboxradio("enable");
+      }
+    },
+
+    checked: function(index) {
+      if (index !== undefined) {
+        var $input = $(this.$ele.find('input[type="checkbox"]')[index]);
+        $input.prop("checked", true).checkboxradio("refresh");
+        return $input.val();
+      }
+    },
+
+    unchecked: function(index) {
+      if (index !== undefined) {
+        var $input = $(this.$ele.find('input[type="checkbox"]')[index]);
+        $input.prop("checked", false).checkboxradio("refresh");
+        return $input.val();
+      }
+    }
+
+  });
+  </script>
+
+</element>

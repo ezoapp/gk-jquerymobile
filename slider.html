@@ -1,0 +1,27 @@
+<element name='slider'>
+
+  <template>
+    <select id='{{id}}' name='{{name}}' data-role='slider' data-mini='{{data-mini}}' data-theme='{{data-theme}}' data-track-theme='{{data-track-theme}}'>
+      <content></content>
+    </select>
+  </template>
+
+  <script>
+  registerElement('slider', {
+
+    init: function() {
+      this.$ele.html(this.$originEle.html());
+    },
+
+    value: function(val) {
+      if (val !== undefined) {
+        return this.$ele.val(val);
+      } else {
+        return this.$ele.val();
+      }
+    }
+
+  });
+  </script>
+
+</element>

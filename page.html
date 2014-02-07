@@ -1,0 +1,26 @@
+<element name='page'>
+
+  <template>
+    <div id='{{id}}' data-gk-click='{{onclick}}' style='{{style}}' data-role='page' class='{{class}}' data-theme='{{data-theme}}'>
+      <content></content>
+    </div>
+  </template>
+
+  <script>
+  registerElement('page', {
+
+    defaultTheme: "a",
+
+    theme: function(theme) {
+      theme || (theme = this.defaultTheme);
+      var allTheme = ['ui-page-theme-a', 'ui-page-theme-b', 'ui-page-theme-c', 'ui-page-theme-d', 'ui-page-theme-e'];
+      this.$ele
+        .removeClass(allTheme.join(" "))
+        .addClass("ui-page-theme-" + theme)
+        .attr('data-theme', theme);
+    }
+
+  });
+  </script>
+
+</element>

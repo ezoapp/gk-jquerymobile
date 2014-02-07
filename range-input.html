@@ -1,0 +1,22 @@
+<element name='range-input'>
+
+  <template>
+    <input id='{{id}}' type='range' name='' value='{{value}}' min='{{min}}' max='{{max}}' step='{{step}}' disabled='{{disabled}}' data-prevent-focus-zoom='{{data-prevent-focus-zoom}}' data-mini='{{data-mini}}' data-theme='{{data-theme}}' data-track-theme='{{data-track-theme}}' data-highlight='{{data-highlight}}'>
+  </template>
+
+  <script>
+  registerElement('range-input', {
+
+    init: function() {
+      var self = this;
+      $(document).one('textinputcreate', '#' + self.id, function() {
+        var $this = $(this);
+        self.$ele = $this;
+        $this.data("_gk_", self);
+      });
+    }
+
+  });
+  </script>
+
+</element>

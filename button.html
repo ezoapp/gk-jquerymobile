@@ -1,0 +1,25 @@
+<element name='button'>
+
+  <template>
+    <a id='{{id}}' class='{{class}}' href='{{href}}' style='{{style}}' data-gk-click='{{onclick}}' data-direction='{{data-direction}}' data-rel='{{data-rel}}' data-transition='{{data-transition}}'>
+      <content></content>
+    </a>
+  </template>
+
+  <script>
+  var widgetClass = "ui-btn";
+
+  registerElement('button', {
+
+    init: function() {
+      var $ele = this.$ele;
+      if (!$ele.hasClass(widgetClass)) {
+        var cls = widgetClass + " " + $ele.attr("class");
+        $ele.attr("class", cls);
+      }
+    }
+
+  });
+  </script>
+
+</element>
