@@ -35,19 +35,17 @@
       }
       this.templateHTML = this.$originEle.html();
       this.arrayModelName = this.$ele.attr('repeat');
-      this.$ele.on('click', this.onclick);
+      var self = this;
+      this.$ele.on('click', function(e) {
+        if (self.onSelectCallback) {
+          self.onSelectCallback(self.$ele.find('li'));
+        }
+      });
       this.onSelectCallback = function() {};
     },
 
     refresh: function() {
       this.$ele.listview('refresh');
-    },
-
-    onclick: function(e) {
-      var src = $(e.originalEvent.srcElement);
-      if (typeof this.onSelectCallback !== null) {
-        this.onSelectCallback(src.closest('li'));
-      }
     },
 
     onRow: function(callback) {
