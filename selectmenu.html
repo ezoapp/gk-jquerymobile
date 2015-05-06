@@ -9,21 +9,18 @@
   <script>
   registerElement('selectmenu', {
 
-    init: function() {
+    init: function () {
       var self = this,
-        $ele = this.$ele;
-      this.modelTemplate = this.$originEle.html();
-      this.onChangeCallback = function() {};
+          $ele = this.$ele;
       $ele.html(this.$originEle.html());
-      $ele.on("selectmenucreate", function(event, ui) {
+      $ele.on("selectmenucreate", function (event, ui) {
         if ($ele.attr('disable') == 'true') {
           $ele.selectmenu("disable");
         }
       });
-      $ele.on("change", function() {
-        if (typeof self.onChangeCallback !== null) {
-          self.onChangeCallback($(this));
-        }
+      $ele.on("change", function () {
+        ($.isFunction(self.onChangeCallback)) || (self.onChangeCallback = $.noop);
+        self.onChangeCallback($(this));
       });
     },
 
@@ -56,21 +53,25 @@
     },
 
     model: function(model) {
-      var self = this;
-      self.$ele.children().remove();
+      var self = this,
+          $ele = self.$ele,
+          template = self.$originEle.html();
+      $ele.children().remove();
       $(model).each(function(idx, obj) {
-        var temp = self.modelTemplate;
+        var tmp = template;
         for (var key in obj) {
-          var regex = new RegExp('\\$\\{' + key + '\\}', "g");
-          temp = temp.replace(regex, obj[key]);
+          var regex = new RegExp('{{' + key + '}}|\\${'+key+'}', "g");
+          tmp = tmp.replace(regex, obj[key]);
         }
-        self.$ele.append(temp);
+        $ele.append(tmp);
       });
       self.refresh();
     },
 
     onChange: function(callback) {
-      this.onChangeCallback = callback;
+      if ($.isFunction(callback)) {
+        this.onChangeCallback = callback;
+      }
     }
 
   });
