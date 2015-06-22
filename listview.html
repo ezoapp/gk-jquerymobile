@@ -1,7 +1,8 @@
 <element name='listview'>
 
   <template>
-    <ul id="{{id}}" data-role="listview" repeat="{{repeat}}" style="{{style}}" data-autodividers="{{data-autodividers}}"
+    <ul id="{{id}}" data-role="listview" style="{{style}}" data-repeat="{{data-repeat}}"
+        data-init-blank="{{data-init-blank}}" data-autodividers="{{data-autodividers}}"
         data-divider-theme="{{data-divider-theme}}" data-filter-reveal="{{data-filter-reveal}}"
         data-filter="{{data-filter}}" data-filter-placeholder="{{data-filter-placeholder}}"
         data-filter-theme="{{data-filter-theme}}" data-icon="{{data-icon}}" data-inset="{{data-inset}}"
@@ -14,109 +15,151 @@
   <script>
     var utils = require('./js/utils');
 
-    //# sourceURL=listview.js
-    var getParamNames = function (func) {
-      var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-      var fnStr = func.toString().replace(STRIP_COMMENTS, '');
-      var result = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(/([^\s,]+)/g);
-      return result === null ? [] : result;
-    };
-
     registerElement('listview', {
       init: function () {
-        var tagName = this.$ele.prop('tagName').toLowerCase(),
-            newTagName = this.$originEle[0].tagName.toLowerCase();
-        this.html = this.$ele.html().trim();
-        if (typeof String.prototype.trim !== 'function') {
-          String.prototype.trim = function () {
-            return this.replace(/^\s+|\s+$/g, '');
-          }
+        var self = this,
+            $ele = self.$ele,
+            $originEle = self.$originEle,
+            tagName = $ele.prop('tagName').toLowerCase(),
+            originTagName = $originEle.prop('tagName').toLowerCase();
+        self.html = $ele.html().trim();
+        self.templateHTML = $originEle.html().trim();
+        self.repeat = $originEle.data('repeat');
+        ($originEle.data('initBlank') !== false) && ($ele.html(''));
+        
+        if (originTagName !== tagName) {
+          utils.changeTagNameOfGKElment(this, originTagName);
         }
-        if (newTagName !== tagName) {
-          utils.changeTagNameOfGKElment(this, newTagName);
-        }
-
-        if (typeof this.$ele.attr('repeat') !== 'undefined') {
-          this.$ele.html('');
-        }
-        this.templateHTML = this.$originEle.html();
-        this.arrayModelName = this.$ele.attr('repeat');
-        var self = this;
-        this.$ele.on('click', 'li', function (e) {
-          if (typeof self.onSelectCallback === 'function') {
-            var params = getParamNames(self.onSelectCallback),
-                $li = $(this);
-            if (params.length == 1 && params[0] !== "vo") {
-              self.onSelectCallback($li);
-            } else {
-              var vo = $li.data('row');
-              var providerParams = {
-                "event": e,
-                "vo": vo
-              };
-              var injectionParams = [];
-              $.each(params, function (idx, obj) {
-                injectionParams.push(providerParams[obj]);
-              });
-              if (typeof self.onSelectCallback !== null) {
-                self.onSelectCallback.apply(self, injectionParams);
-              }
-            }
-          } else {
-            self.onSelectCallback = function () {
-            };
-          }
-        });
       },
 
       refresh: function () {
         this.$ele.listview('refresh');
       },
 
-      onRow: function (callback) {
-        this.onSelectCallback = callback;
+      autodividersSelector: function (selector) {
+        if ($.isFunction(selector)) {
+          this.$ele.listview({
+            autodividersSelector: selector
+          });
+          this.refresh();
+        }
+      },
+
+      onRowEvent: function (event, handler) {
+        var self = this;
+        self.$ele.on(event, 'li:not([data-role="list-divider"])', function (eo) {
+          dispatchEventToHandler(this, eo, handler, self);
+        });
+      },
+
+      onRow: function (handler) {
+        if ($.isFunction(handler)) {
+          this.onRowEvent('click', handler);
+        } 
+      },
+      
+      onTapHold: function (handler) {
+        if ($.isFunction(handler)) {
+          this.onRowEvent('taphold', handler);
+        } 
       },
 
       model: function (model) {
-        var self = this;
-        self.$ele.listview({
-          autodividersSelector: function (li) {
-            return self.$ele.attr('autodividers') === 'undefined' ?
-                null : li.attr('divider');
+        var self = this,
+            $ele = self.$ele;
+        if ($.isArray(model) || $.isPlainObject(model)) {
+          $ele.html('');
+          self.idxs = [];
+          
+          if ($.isArray(model)) {
+            self.modelData = model;
+          } else if ($.type(self.repeat) === 'string' && $.isArray(model[self.repeat])) {
+            self.modelData = model[self.repeat];
+          } else {
+            self.modelData = [model];
           }
-        });
-        var iterator = typeof self.arrayModelName == 'undefined' ?
-            model : model[self.arrayModelName];
-        self.$ele.html('');
-        $(iterator).each(function (idx, obj) {
-          var newOne = self.templateHTML;
-          for (var key in obj) {
-            var regex = new RegExp('{{' + key + '}}|\\${'+key+'}', "g");
-            newOne = newOne.replace(regex, obj[key]);
-          }
-          $(newOne.trim()).appendTo(self.$ele).data('row', obj);
-        });
-        self.$ele.listview('refresh');
+          
+          $.each(self.modelData, function (idx, data) {
+            var template = replaceTemplate(self.templateHTML, data),
+                $template = $(template),
+                sn = getUniqueStamp();
+            $template.attr('idx', sn).appendTo($ele).data('model', data);
+            self.idxs.push(sn);
+          });
+          $ele.listview('refresh');
+        } else {
+          return self.modelData;
+        }
       },
 
-      apply: function (info) {
+      addRow: function (data) {
         var self = this,
-            html = self.html;
-        for (var property in info) {
-          if (info.hasOwnProperty(property)) {
-            var regex = new RegExp('{{' + property + '}}|\\${'+property+'}', "g");
-            html = html.replace(regex, info[property]);
-          }
+            $ele = self.$ele,
+            template = replaceTemplate(self.templateHTML, data),
+            $template = $(template),
+            sn = getUniqueStamp();
+        $template.attr('idx', sn).appendTo($ele).data('model', data);
+        self.modelData.push(data);
+        self.idxs.push(sn);
+        $ele.listview('refresh');
+      },
+      
+      insertRow: function (data, index) {
+        (this.idxs.indexOf(index) > -1) && (index = this.idxs.indexOf(index));
+        if (!$.isNumeric(index) || index >= this.idxs.length) {
+          this.addRow(data);
+        } else {
+          var self = this,
+              $ele = self.$ele,
+              template = replaceTemplate(self.templateHTML, data),
+              $template = $(template),
+              sn = getUniqueStamp();
+          $template.attr('idx', sn)
+              .insertBefore($ele.find('[idx="' + self.idxs[index] + '"]:first'))
+              .data('model', data);
+          self.modelData.splice(index, 0, data);
+          self.idxs.splice(index, 0, sn);
+          $ele.listview('refresh');
         }
-        var $html = $('<div>' + html + '</div>');
-        $html.find('[data-readonly=Y]').each(function (idx, node) {
-          $(node).replaceWith($(node).html());
-        });
-        self.$ele.html($html.html());
-        self.$ele.listview("refresh", true);
+      },
+      
+      removeRow: function (index) {
+        (this.idxs.indexOf(index) > -1) && (index = this.idxs.indexOf(index));
+        if ($.isNumeric(index) && index < this.idxs.length) {
+          var self = this,
+              $ele = self.$ele;
+          $ele.find('[idx="' + self.idxs[index] + '"]').remove();
+          self.modelData.splice(index, 1);
+          self.idxs.splice(index, 1);
+          $ele.listview('refresh');          
+        }
       }
-
+      
     });
+    
+    function getUniqueStamp() {
+      return new Date().getTime() + '' + Math.random();
+    }
+
+    function replaceTemplate(template, data) {
+      for (var key in data) {
+        if (data.hasOwnProperty(key)) {
+          var regex = new RegExp('{{' + key + '}}|\\${' + key + '}', "g");
+          template = template.replace(regex, data[key]);
+        }
+      }
+      return template;
+    }
+    
+    function dispatchEventToHandler (triggerEle, eo, handler, self) {
+      if (typeof handler === 'function') {
+        var $triggerEle = $(triggerEle),
+            model = $triggerEle.data('model'),
+            idx = self.idxs.indexOf($triggerEle.attr('idx'));
+        handler.apply(triggerEle, [eo, model, idx]);
+      }
+    }
+    
   </script>
 
 </element>
