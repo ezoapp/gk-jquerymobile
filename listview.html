@@ -2,7 +2,7 @@
 
   <template>
     <ul id="{{id}}" data-role="listview" style="{{style}}" data-repeat="{{data-repeat}}"
-        data-init-blank="{{data-init-blank}}" data-autodividers="{{data-autodividers}}"
+        data-debug="{{data-debug}}" data-autodividers="{{data-autodividers}}"
         data-divider-theme="{{data-divider-theme}}" data-filter-reveal="{{data-filter-reveal}}"
         data-filter="{{data-filter}}" data-filter-placeholder="{{data-filter-placeholder}}"
         data-filter-theme="{{data-filter-theme}}" data-icon="{{data-icon}}" data-inset="{{data-inset}}"
@@ -25,7 +25,7 @@
         self.html = $ele.html().trim();
         self.templateHTML = $originEle.html().trim();
         self.repeat = $originEle.data('repeat');
-        ($originEle.data('initBlank') !== false) && ($ele.html(''));
+        (!$originEle.data('debug') && self.repeat) && ($ele.html(''));
         
         if (originTagName !== tagName) {
           utils.changeTagNameOfGKElment(this, originTagName);
@@ -33,7 +33,7 @@
       },
 
       refresh: function () {
-        this.$ele.listview('refresh');
+        this.$ele.listview('refresh').enhanceWithin();
       },
 
       autodividersSelector: function (selector) {
@@ -47,7 +47,7 @@
 
       onRowEvent: function (event, handler) {
         var self = this;
-        self.$ele.on(event, 'li:not([data-role="list-divider"])', function (eo) {
+        self.$ele.on(event, '>li:not([data-role="list-divider"])', function (eo) {
           dispatchEventToHandler(this, eo, handler, self);
         });
       },
@@ -86,7 +86,7 @@
             $template.attr('idx', sn).appendTo($ele).data('model', data);
             self.idxs.push(sn);
           });
-          $ele.listview('refresh');
+          self.refresh();
         } else {
           return self.modelData;
         }
@@ -101,7 +101,7 @@
         $template.attr('idx', sn).appendTo($ele).data('model', data);
         self.modelData.push(data);
         self.idxs.push(sn);
-        $ele.listview('refresh');
+        self.refresh();
       },
       
       insertRow: function (data, index) {
@@ -119,19 +119,22 @@
               .data('model', data);
           self.modelData.splice(index, 0, data);
           self.idxs.splice(index, 0, sn);
-          $ele.listview('refresh');
+          self.refresh();
         }
       },
       
       removeRow: function (index) {
-        (this.idxs.indexOf(index) > -1) && (index = this.idxs.indexOf(index));
-        if ($.isNumeric(index) && index < this.idxs.length) {
-          var self = this,
-              $ele = self.$ele;
-          $ele.find('[idx="' + self.idxs[index] + '"]').remove();
-          self.modelData.splice(index, 1);
-          self.idxs.splice(index, 1);
-          $ele.listview('refresh');          
+        if (this.idxs) {
+          (this.idxs.indexOf(index) > -1) && (index = this.idxs.indexOf(index));
+          if ($.isNumeric(index) && index < this.idxs.length) {
+            var self = this,
+                $ele = self.$ele;
+            $ele.find('[idx="' + self.idxs[index] + '"]').remove();
+            self.modelData.splice(index, 1);
+            self.idxs.splice(index, 1);
+          }          
+        } else {
+          this.$ele.find('>li:not([data-role="list-divider"]):eq(' + index + ')').remove();
         }
       }
       
@@ -155,7 +158,8 @@
       if (typeof handler === 'function') {
         var $triggerEle = $(triggerEle),
             model = $triggerEle.data('model'),
-            idx = self.idxs.indexOf($triggerEle.attr('idx'));
+            idx = (self.idxs) ? self.idxs.indexOf($triggerEle.attr('idx')) 
+                : self.$ele.find('>li:not([data-role="list-divider"])').index(triggerEle);
         handler.apply(triggerEle, [eo, model, idx]);
       }
     }
