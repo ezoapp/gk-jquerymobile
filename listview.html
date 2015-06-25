@@ -22,10 +22,12 @@
             $originEle = self.$originEle,
             tagName = $ele.prop('tagName').toLowerCase(),
             originTagName = $originEle.prop('tagName').toLowerCase();
-        self.html = $ele.html().trim();
         self.templateHTML = $originEle.html().trim();
-        self.repeat = $originEle.data('repeat');
-        (!$originEle.data('debug') && self.repeat) && ($ele.html(''));
+        (!$originEle.data('debug') && self.repeat()) && ($ele.html(''));
+        if (self.repeat()) {
+          self.modelData = [];
+          self.idxs = [];
+        }
         
         if (originTagName !== tagName) {
           utils.changeTagNameOfGKElment(this, originTagName);
@@ -63,18 +65,32 @@
           this.onRowEvent('taphold', handler);
         } 
       },
+      
+      repeat: function (repeat) {
+        var $originEle = this.$originEle;
+        if ($.type(repeat).match(/boolean|string/)) {
+          $originEle.data('repeat', repeat);
+          if (repeat === false) {
+            delete this.modelData;
+            delete this.idxs;
+          }
+        } else {
+          return $originEle.data('repeat');
+        }
+      },
 
       model: function (model) {
         var self = this,
-            $ele = self.$ele;
-        if ($.isArray(model) || $.isPlainObject(model)) {
+            $ele = self.$ele,
+            repeat = self.repeat();
+        if (repeat && typeof model === 'object') {
           $ele.html('');
           self.idxs = [];
           
           if ($.isArray(model)) {
             self.modelData = model;
-          } else if ($.type(self.repeat) === 'string' && $.isArray(model[self.repeat])) {
-            self.modelData = model[self.repeat];
+          } else if ($.type(repeat) === 'string' && $.isArray(model[repeat])) {
+            self.modelData = model[repeat];
           } else {
             self.modelData = [model];
           }
@@ -93,48 +109,56 @@
       },
 
       addRow: function (data) {
-        var self = this,
-            $ele = self.$ele,
-            template = replaceTemplate(self.templateHTML, data),
-            $template = $(template),
-            sn = getUniqueStamp();
-        $template.attr('idx', sn).appendTo($ele).data('model', data);
-        self.modelData.push(data);
-        self.idxs.push(sn);
-        self.refresh();
-      },
-      
-      insertRow: function (data, index) {
-        (this.idxs.indexOf(index) > -1) && (index = this.idxs.indexOf(index));
-        if (!$.isNumeric(index) || index >= this.idxs.length) {
-          this.addRow(data);
-        } else {
+        if (this.repeat()) {
           var self = this,
               $ele = self.$ele,
               template = replaceTemplate(self.templateHTML, data),
               $template = $(template),
               sn = getUniqueStamp();
-          $template.attr('idx', sn)
-              .insertBefore($ele.find('[idx="' + self.idxs[index] + '"]:first'))
-              .data('model', data);
-          self.modelData.splice(index, 0, data);
-          self.idxs.splice(index, 0, sn);
-          self.refresh();
+          $template.attr('idx', sn).appendTo($ele).data('model', data);
+          self.modelData.push(data);
+          self.idxs.push(sn);
+          self.refresh();          
+        }
+      },
+      
+      insertRow: function (data, index) {
+        var self = this,
+            $ele = self.$ele,
+            idxs = self.idxs,
+            modelData = self.modelData;
+        if (self.repeat()) {
+          (idxs.indexOf(index) > -1) && (index = idxs.indexOf(index));
+          if (!$.isNumeric(index) || index >= idxs.length) {
+            self.addRow(data);
+          } else {
+            var template = replaceTemplate(self.templateHTML, data),
+                $template = $(template),
+                sn = getUniqueStamp();
+            $template.attr('idx', sn)
+                .insertBefore($ele.find('[idx="' + idxs[index] + '"]:first'))
+                .data('model', data);
+            modelData.splice(index, 0, data);
+            idxs.splice(index, 0, sn);
+            self.refresh();
+          }          
         }
       },
       
       removeRow: function (index) {
-        if (this.idxs) {
-          (this.idxs.indexOf(index) > -1) && (index = this.idxs.indexOf(index));
-          if ($.isNumeric(index) && index < this.idxs.length) {
-            var self = this,
-                $ele = self.$ele;
-            $ele.find('[idx="' + self.idxs[index] + '"]').remove();
-            self.modelData.splice(index, 1);
-            self.idxs.splice(index, 1);
+        var self = this,
+            $ele = self.$ele,
+            idxs = self.idxs,
+            modelData = self.modelData;
+        if (self.repeat()) {
+          (idxs.indexOf(index) > -1) && (index = idxs.indexOf(index));
+          if ($.isNumeric(index) && index < idxs.length) {
+            $ele.find('[idx="' + idxs[index] + '"]').remove();
+            modelData.splice(index, 1);
+            idxs.splice(index, 1);
           }          
         } else {
-          this.$ele.find('>li:not([data-role="list-divider"]):eq(' + index + ')').remove();
+          $ele.find('>li:not([data-role="list-divider"]):eq(' + index + ')').remove();
         }
       }
       
@@ -160,7 +184,7 @@
             model = $triggerEle.data('model'),
             idx = (self.idxs) ? self.idxs.indexOf($triggerEle.attr('idx')) 
                 : self.$ele.find('>li:not([data-role="list-divider"])').index(triggerEle);
-        handler.apply(triggerEle, [eo, model, idx]);
+        handler.apply(triggerEle, [eo, idx, model]);
       }
     }
     
